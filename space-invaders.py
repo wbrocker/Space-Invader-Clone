@@ -31,6 +31,13 @@ bullet_speed = 7
 bullet_cooldown = 200  # Milliseconds
 last_shot_time = 0
 
+# Game Settings
+lives = 3
+score = 0
+
+# Font Settings
+font = pygame.font.Font(None, 36)
+
 
 # Bullet Class
 class Bullet:
@@ -77,9 +84,14 @@ def draw_spaceship(surface, x, y):
     ])
 
 
+def draw_text(surface, text, font, x, y):
+    text_obj = font.render(text, True, WHITE)
+    text_rect = text_obj.get_rect()
+    text_rect.topleft = (x, y)
+    surface.blit(text_obj, text_rect)
+
+
 # Main game loop
-
-
 running = True
 
 while running:
@@ -101,7 +113,7 @@ while running:
         bullets.append(Bullet(bullet_x, bullet_y))
         last_shot_time = current_time
 
-    if keys[pygame.K_q]:    # Quit the game.
+    if keys[pygame.K_q]:  # Quit the game.
         running = False
 
     # Move Bullets
@@ -121,6 +133,13 @@ while running:
     # Draw bullets
     for bullet in bullets:
         bullet.draw(window)
+
+    # Draw lives and score
+    draw_text(window, f'Lives: {lives}', font, 10, 10)
+    draw_text(window, f'Score: {score}', font, width - 120, 10)
+
+    # Draw horizontal line below the text
+    pygame.draw.line(window, WHITE, (0, 50), (width, 50), 2)
 
     # Update the Display
     pygame.display.flip()
