@@ -15,6 +15,7 @@ WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 RED = (255, 0, 0)
+YELLOW = (255, 255, 0)
 
 # SpaceShip Settings
 spaceship_width = 60
@@ -41,7 +42,8 @@ class Bullet:
         self.y -= bullet_speed
 
     def draw(self, surface):
-        pygame.draw.rect(surface, WHITE, (self.x, self.y, bullet_width, bullet_height))
+        pygame.draw.ellipse(surface, YELLOW, (self.x, self.y, bullet_width, bullet_height))
+        # pygame.draw.rect(surface, WHITE, (self.x, self.y, bullet_width, bullet_height))
 
 
 # List to store bullets
