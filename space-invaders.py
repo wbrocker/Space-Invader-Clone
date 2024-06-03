@@ -1,5 +1,6 @@
 import pygame
 import sys
+import random
 
 # Initialize pygame
 pygame.init()
@@ -16,6 +17,7 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
+ENEMY_COLOR = (255, 165, 0) # Orange
 
 # SpaceShip Settings
 spaceship_width = 60
@@ -30,6 +32,13 @@ bullet_height = 7
 bullet_speed = 7
 bullet_cooldown = 200  # Milliseconds
 last_shot_time = 0
+
+# Enemy Settings
+enemy_width = 50
+enemy_height = 30
+enemy_speed = 2
+enemy_bomb_cooldown = 1000 # Milliseconds.
+
 
 # Game Settings
 lives = 3
@@ -53,8 +62,61 @@ class Bullet:
         # pygame.draw.rect(surface, WHITE, (self.x, self.y, bullet_width, bullet_height))
 
 
+# Bomb Class
+class Bomb:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def move(self):
+        self.y -= bullet_speed
+
+    def draw(self, surface):
+        pygame.draw.ellipse(surface, RED, (self.x, self.y, bullet_width, bullet_height))
+
+
+# Enemy Class
+class Enemy:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.direction = 1      # 1: Right, -1: Left
+        self.last_bomb_time = pygame.time.get_ticks()
+
+    def move(self):
+        self.x += enemy_speed * self.direction
+        if self.x < 0 or self.x >= width - enemy_width:
+            self.direction *= -1
+            self.y += enemy_height
+
+    def draw(self, surface):
+        pygame.draw.rect(surface, ENEMY_COLOR, (self.x, self.y, bullet_width, bullet_height))
+
+    def drop_bomb(self):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_bomb_time > enemy_bomb_cooldown:
+            self.last_bomb_time = current_time
+            return Bomb(self.x + enemy_width //2, self.y + enemy_height)
+        return None
+
 # List to store bullets
 bullets = []
+bombs = []
+
+# List to store enemies
+enemies = []
+
+# Function to create enemies
+def create_enemies(rows, cols):
+    for row in range(rows):
+        for col in range(cols):
+            enemy_x = col * (enemy_width + 10) + 50
+            enemy_y = row * (enemy_height + 10) + 50
+            enemies.append(Enemy(enemy_x, enemy_y))
+
+
+# Create a grid of enemies
+create_enemies(3, 10)
 
 
 def draw_spaceship(surface, x, y):
@@ -123,6 +185,20 @@ while running:
     # Remove bullets that have moved off the screen
     bullets = [bullet for bullet in bullets if bullet.y > 0]
 
+    # Move Enemies
+    for enemy in enemies:
+        enemy.move()
+        bomb = enemy.drop_bomb()
+        if bomb:
+            bombs.append(bomb)
+
+    # Move Bombs
+    for bomb in bombs:
+        bomb.move()
+
+    # Remove bomb if it goes off screen
+    bombs = [bomb for bomb in bombs if bomb.y < height]
+
     # Fill in the background
     window.fill(BLACK)
 
@@ -133,6 +209,14 @@ while running:
     # Draw bullets
     for bullet in bullets:
         bullet.draw(window)
+
+    # Draw bombs
+    for bomb in bombs:
+        bomb.draw(window)
+
+    # Draw Enemies
+    for enemy in enemies:
+        enemy.draw(window)
 
     # Draw lives and score
     draw_text(window, f'Lives: {lives}', font, 10, 10)
